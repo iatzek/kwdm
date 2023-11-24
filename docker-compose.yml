@@ -7,8 +7,19 @@ services:
             - "8033:8042"
             - "4033:4242"
         environment:
-            - KWDM_ENDPOINT=http://localhost:1234/
+            - KWDM_ENDPOINT=http://kwdm:5555/newInstance/
         volumes:
             - ./dane/:/var/lib/orthanc/db/
             - ./konfiguracja/:/etc/orthanc/
+        depends_on:
+            - kwdm
+    kwdm:
+        build:
+            context: ./kwdm
+            dockerfile: ./Dockerfile.wp
+        environment:
+            - PORT=5555
+#        volumes:
+#            - ...
+
 

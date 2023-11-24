@@ -1,0 +1,11 @@
+FROM debian:bullseye-slim
+RUN export export DEBIAN_FRONTEND=noninteractive && \
+    apt-get update && \
+    apt-get install -y tzdata && \
+    ln -fs /usr/share/zoneinfo/Europe/Warsaw /etc/localtime && \
+    dpkg-reconfigure --frontend noninteractive tzdata && \
+    apt-get install -y python3-flask python3-requests  && \
+    apt-get clean && (rm -f /var/lib/apt/lists/* || true) && \
+    mkdir /opt/serwer/
+COPY kwdm.py /opt/serwer/
+ENTRYPOINT ["/opt/serwer/kwdm.py"]
