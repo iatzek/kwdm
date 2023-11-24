@@ -1,0 +1,12 @@
+version: "3.7"
+services:
+    orthanc:
+        image: jodogne/orthanc:latest
+        restart: unless-stopped
+        ports:
+            - "8033:8042"
+            - "4033:4242"
+        volumes:
+            - ./dane/:/var/lib/orthanc/db/
+            - ./konfiguracja/:/etc/orthanc/
+
