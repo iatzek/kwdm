@@ -15,6 +15,7 @@ function OnStoredInstance(instanceId, tags, metadata)
 
    local body = {}
    body['SOPInstanceUID'] = sop
+   body['OrthancInstanceID' ] = instanceId
 
    HttpPost(url, DumpJson(body, true), headers)
 
