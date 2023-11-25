@@ -10,14 +10,18 @@ function OnStoredInstance(instanceId, tags, metadata)
    -- if tags['SOPClassUID'] == '1234' and tags["StudyDescription"] 
    -- end
 
-   local headers = {}
-   headers['Content-Type'] = 'application/json'
+   -- tylko CTImageStorage-- 
+   if tags['SOPClassUID'] == '1.2.840.10008.5.1.4.1.1.2' then
 
-   local body = {}
-   body['SOPInstanceUID'] = sop
-   body['OrthancInstanceID' ] = instanceId
+        local headers = {}
+        headers['Content-Type'] = 'application/json'
 
-   HttpPost(url, DumpJson(body, true), headers)
+        local body = {}
+        body['SOPInstanceUID'] = sop
+        body['OrthancInstanceID' ] = instanceId
 
+        HttpPost(url, DumpJson(body, true), headers)
+
+   end
 end
 
