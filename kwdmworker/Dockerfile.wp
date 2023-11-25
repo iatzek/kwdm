@@ -4,8 +4,8 @@ RUN export export DEBIAN_FRONTEND=noninteractive && \
     apt-get install -y tzdata && \
     ln -fs /usr/share/zoneinfo/Europe/Warsaw /etc/localtime && \
     dpkg-reconfigure --frontend noninteractive tzdata && \
-    apt-get install -y python3-flask python3-requests && \
+    apt-get install -y python3-flask python3-requests python3-pydicom python3-opencv && \
     apt-get clean && (rm -f /var/lib/apt/lists/* || true) && \
     mkdir /opt/serwer/
-COPY kwdm.py /opt/serwer/
-ENTRYPOINT ["/opt/serwer/kwdm.py"]
+COPY worker.py /opt/serwer/
+ENTRYPOINT ["/opt/serwer/worker.py"]

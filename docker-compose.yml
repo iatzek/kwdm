@@ -7,25 +7,33 @@ services:
             - "8033:8042"
             - "4033:4242"
         environment:
-            - KWDM_ENDPOINT=http://kwdm1:5555/newInstance/
+            - KWDM_ENDPOINT=http://kwdmqueue:5555/queue/
         volumes:
             - ./dane/:/var/lib/orthanc/db/
             - ./konfiguracja/:/etc/orthanc/
         depends_on:
-            - kwdm1
-    kwdm1:
+            - kwdmqueue
+    kwdmqueue:
         build:
             context: ./kwdm
             dockerfile: ./Dockerfile.wp
         environment:
             - PORT=5555
             - ORTHANC_URI=http://orthanc:8042
-            - ORTHANC_USER=orthanc
-            - ORTHANC_PASSWORD=orthanc
+            - DB=/db/queue.sql
         ports:
             - "8133:5555"
-
-#        volumes:
-#            - ...
+        volumes:
+            - ./db:/db/
+    kwdmworker:
+        build:
+            context: ./kwdmworker
+            dockerfile: ./Dockerfile.wp
+        environment:
+            - QUEUE_URI=http://kwdmqueue:5555/queue/
+            - ORTHANC_USER=orthanc
+            - ORTHANC_PASSWORD=orthanc
+        depends_on:
+            - kwdmqueue
 
 
