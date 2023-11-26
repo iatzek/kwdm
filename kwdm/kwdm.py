@@ -16,7 +16,7 @@ logging.basicConfig(level=logging.INFO)
 _logger = logging.getLogger(__name__)
 
 
-import sqlite3
+import psycopg2
 
 
 app = Flask(__name__)
@@ -25,23 +25,31 @@ app = Flask(__name__)
 db = os.environ.get('DB', 'queue.db')
 
 def getConnection():
-    conn = sqlite3.connect(db)
+    conn = psycopg2.connect(user='postgres', 
+                            password=os.environ.get('POSTGRES_PASSWORD'),
+                            host='postgres',
+                            port=5432,
+                            database='postgres')
     return conn
 
 def prepareTable():
     conn = getConnection()
     cursor = conn.cursor()
-    
+
+    # w postgresie można wykorzystać meta-typ SERIAL
+    # który tworzy autoinkrementującą kolejkę
     cursor.execute('CREATE TABLE IF NOT EXISTS queue ' \
-                       ' (id INTEGER PRIMARY KEY, date TIMESTAMP, ' \
+                       ' (id SERIAL PRIMARY KEY, date TIMESTAMP, ' \
                        '  orthancInstanceID TEXT, state INTEGER, returnAddress TEXT)')
     cursor.execute('CREATE INDEX IF NOT EXISTS did ON queue(state, date)')
     conn.commit()
     conn.close()
 
 def enqueue(orthancInstanceID, returnAddress):
+    # w sqlite3 w szablonie wykorzystuje się ?
+    # w postgresie %s (lub wariacje)
     q = "INSERT INTO queue (date, orthancInstanceID, state, returnAddress) " \
-        " VALUES (?, ?, ?, ?)"
+        " VALUES (%s, %s, %s, %s)"
     conn = getConnection()
     cursor = conn.cursor()
     cursor.execute(q, (datetime.now(), orthancInstanceID, 0, returnAddress)) # 0 - nowe
@@ -49,7 +57,7 @@ def enqueue(orthancInstanceID, returnAddress):
     conn.close()
 
 def _updatequeue(orthancInstanceID, state):
-    q = "UPDATE queue SET state = ? WHERE orthancInstanceID = ?"
+    q = "UPDATE queue SET state = %s WHERE orthancInstanceID = %s"
     conn = getConnection()
     cursor = conn.cursor()
     cursor.execute(q, (state, orthancInstanceID))

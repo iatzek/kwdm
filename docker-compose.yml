@@ -7,13 +7,13 @@ services:
             - "8033:8042"
             - "4033:4242"
         environment:
-            - KWDM_ENDPOINT=http://kwdmqueue:5555/queue/
+            - KWDM_ENDPOINT=http://kwdmqueuepy:5555/queue/
         volumes:
             - ./dane/:/var/lib/orthanc/db/
             - ./konfiguracja/:/etc/orthanc/
         depends_on:
-            - kwdmqueue
-    kwdmqueue:
+            - kwdmqueuepy
+    kwdmqueuepy:
         build:
             context: ./kwdm
             dockerfile: ./Dockerfile.wp
@@ -21,19 +21,37 @@ services:
             - PORT=5555
             - ORTHANC_URI=http://orthanc:8042
             - DB=/db/queue.sql
+            - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
         ports:
             - "8133:5555"
         volumes:
             - ./db:/db/
+        depends_on:
+            - postgres
+        # wymusza restart, gdyby usługa zakończyła się przedwcześnie
+        restart: always
     kwdmworker:
         build:
             context: ./kwdmworker
             dockerfile: ./Dockerfile.wp
         environment:
-            - QUEUE_URI=http://kwdmqueue:5555/queue/
+            - QUEUE_URI=http://kwdmqueuepy:5555/queue/
             - ORTHANC_USER=orthanc
             - ORTHANC_PASSWORD=orthanc
         depends_on:
-            - kwdmqueue
-
-
+            - kwdmqueuepy
+        restart: always
+    postgres:
+        image: postgres
+        restart: always
+        environment:
+        # z pliku .env
+        # domyślny user: postgres, baza: jak user
+            - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+        volumes:
+            - ./pgdata:/var/lib/postgresql/data
+    postgresadmin:
+        image: adminer
+        restart: always
+        ports:
+            - 8233:8080
